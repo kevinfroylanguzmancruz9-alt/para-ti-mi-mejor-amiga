@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLuvia de Corazón</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            background: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .mensaje {
+            position: relative;
+            z-index: 2;
+            font-family: 'Arial', sans-serif;
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: #ff4d6d;
+            text-shadow: 0 0 10px #ff4d6d, 0 0 20px #ff0a54;
+            text-align: center;
+            opacity: 0;
+            animation: aparecer 2s ease-in-out 5s forwards;
+        }
+
+        @keyframes aparecer {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="mensaje">TE QUIERO MUCHO</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Ajustar canvas al tamaño de la pantalla
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Clase para las partículas de lluvia
+        class Particula {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = -Math.random() * canvas.height;
+                this.velocidadY = 2 + Math.random() * 3;
+                this.tamano = 1 + Math.random() * 2;
+                this.color = `rgba(255, 77, 109, ${0.5 + Math.random() * 0.5})`;
+            }
+
+            actualizar() {
+                this.y += this.velocidadY;
+                // Verificar si la partícula está dentro del contorno del corazón
+                if (this.estaEnCorazon(this.x, this.y)) {
+                    this.color = `rgba(255, 10, 84, ${0.8 + Math.random() * 0.2})`;
+                    this.velocidadY *= 0.5;
+                }
+                // Reiniciar partícula si sale de la pantalla
+                if (this.y > canvas.height) this.reset();
+            }
+
+            dibujar() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.tamano, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+
+            // Fórmula matemática del corazón (coordenadas escaladas)
+            estaEnCorazon(x, y) {
+                const escala = Math.min(canvas.width / 400, canvas.height / 400);
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                // Convertir a coordenadas locales del corazón
+                const nx = (x - cx) / escala;
+                const ny = (y - cy) / escala;
+                // Ecuación del corazón: (x² + y² - 1)³ - x²y³ ≤ 0
+                return Math.pow(nx**2 + ny**2 - 1, 3) - nx**2 * Math.pow(ny, 3) ≤ 0;
+            }
+        }
+
+        // Crear array de partículas
+        const cantidadParticulas = 150;
+        const particulas = [];
+        for (let i = 0; i < cantidadParticulas; i++) {
+            particulas.push(new Particula());
+        }
+
+        // Bucle de animación
+        function animar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particulas.forEach(p => {
+                p.actualizar();
+                p.dibujar();
+            });
+            requestAnimationFrame(animar);
+        }
+        animar();
+    </script>
+</body>
+</html>
